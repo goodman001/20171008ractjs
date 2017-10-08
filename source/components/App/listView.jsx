@@ -7,6 +7,7 @@ import { Button, Icon } from 'semantic-ui-react';
 import { Input } from 'semantic-ui-react'
 import { Form, Radio } from 'semantic-ui-react'
 import { Grid, Segment, Divider } from 'semantic-ui-react'
+import { Dropdown } from 'semantic-ui-react'
 import axios from 'axios';
 
 var apiKey = "268cadf74b38898fc4b07c2f994ffa08";
@@ -20,7 +21,6 @@ class ListView extends Component {
 			viewScreen:[],//search input
 			searchValue:"",
 			filterFlag:"all",
-			value:"",
 			resultScreen:[],
 		}
 	}
@@ -35,41 +35,13 @@ class ListView extends Component {
 			<div>
 				<Input loading placeholder='Search...' id="search" onChange = {(event) => this.updateSearchValue(event)} />
 				<Button color='red' onClick={(event) => this.handleSearchClick(event)}>Search</Button>
-				<Form>
-					<Form.Field>
-					  Selected value: <b>{this.state.value}</b>
-					</Form.Field>
-				<Grid columns={3} relaxed>
-					<Grid.Column>
-					  <Segment basic>
-						<Form.Field>
-						  <Radio
-							label='no filter'
-							name='radioGroup'
-							//value='this'
-							onChange={(event, value) => this.updateFilterRatio(event,value)}
-						  />
-						</Form.Field>
-					  </Segment>
-					</Grid.Column>
-					<Grid.Column>
-					  <Segment basic>
-						<Form.Field>
-						  <Radio
-							label='Filter Movie name'
-							name='radioGroup'
-							//value='that'
-							onChange={(event, value) => this.updateFilterRatio(event,value)}
-						  />
-						</Form.Field>
-					  </Segment>
-					</Grid.Column>
-					<Grid.Column>
-					  <Segment basic>
-					  </Segment>
-					</Grid.Column>
-				</Grid>
-			  </Form>
+				<Dropdown
+					selectOnBlur={false}
+					selection
+					placeholder={'Filter (default all) '}
+					options={[{key: 0, text: 'all', value: 'all'}, {key: 1, text: 'movie name', value: 'moviename'}]} 
+					onChange={(event,value) => this.updateFilter(event,value)}
+				/>
 			</div>
 		);
 	}
@@ -80,9 +52,11 @@ class ListView extends Component {
 		});
 	}
 	/*filter*/
-	updateFilterRatio(event,value){
+	updateFilter(event,value){
 		console.log(value.value);
-		//this.setState({ value:value.value });
+		this.setState({ filterFlag:value.value });
+		console.log(this.state.filterFlag);
+		
 		
 	}
 	/*submit search */
@@ -95,7 +69,11 @@ class ListView extends Component {
 				console.log(response);
 				if(response.status == 200){
 					console.log("search successfull");
-					
+					console.log(response.data.results);
+					var resultScreen = [];
+					resultScreen = self.renderResultTable(response.data.results);
+    				self.setState({resultScreen});
+					//self.renderResultTable();
 					//console.log(response.data.user);
 					//var uploadScreen=[];
 					//uploadScreen.push(<UserPage appContext={self.props.appContext} role={self.state.loginRole} user={response.data.user} />)
@@ -111,6 +89,62 @@ class ListView extends Component {
 			   console.log(error);
 			});
 	}
+	
+	
+	/* show search result */
+	 fetchDetails(e){
+    const data = e.target.getAttribute('data-item');
+    console.log('We need to get the details for ', data);
+  }
+	isEmpty(obj) {
+		return Object.keys(obj).length === 0;
+	}
+	/*show table > tr*/
+  renderResultRows(noteItems) {
+    var self = this;
+    return noteItems.map((data,index) =>{
+        return (
+            <tr key={index} data-item={data} onClick={(event) =>this.fetchDetails(event)}>
+                <td data-title="id">{data.id}</td>
+                <td data-title="title">{data.title}</td>
+                <td data-title="release_date">{data.release_date}</td>
+				<td data-title="content">
+						<Button label="Edit" primary={true}  onClick={(event) => self.handleNoteEditClick(event,index)}/>
+				</td>
+            </tr>
+        );
+    });
+  }
+  /* show table */
+  renderResultTable(data) {
+    var self = this;
+    return(
+		<div>
+		  <div>
+			<div className="noteheader">
+			 <center><h3>Note list</h3></center>
+			<Button  label="NewNote" onClick={(event) => this.handleNoteCreateClick(event)}/>
+			</div>
+			<div className="notecontainer">
+					 <table className="notetable">
+					  <tr>
+						<th>ID</th>
+						<th>TITLE</th>
+						<th>CONTENT</th>
+						<th></th>
+					  </tr>
+					  <tbody>
+					  
+						{!this.isEmpty(data)
+                        ? this.renderResultRows(data)
+                        : ''}
+					   </tbody>
+					</table>
+			 </div>
+		   </div>
+		  </div>
+	);
+  }
 	render() {
 		//console.log(this.props.user.noteItems);
 		//this.generateRows();
@@ -129,7 +163,7 @@ class ListView extends Component {
 			  <div className="container">
 
 				  {this.state.viewScreen}
-				  {this.state.searchValue}
+				  {this.state.resultScreen}
 			  </div>
 		  </div>
 		);
