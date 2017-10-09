@@ -4,10 +4,12 @@ import {BrowserRouter as Router,Route, Link} from 'react-router-dom';
 
 import 'semantic-ui-css/semantic.min.css';
 import { Button, Icon } from 'semantic-ui-react';
-import { Input } from 'semantic-ui-react'
-import { Form, Radio } from 'semantic-ui-react'
-import { Grid, Segment, Divider } from 'semantic-ui-react'
+import { Input } from 'semantic-ui-react';
+import { Form, Radio } from 'semantic-ui-react';
+import { Grid, Segment, Divider } from 'semantic-ui-react';
+import { Table } from 'semantic-ui-react';
 import { Dropdown } from 'semantic-ui-react'
+import { List } from 'semantic-ui-react'
 import axios from 'axios';
 
 var apiKey = "268cadf74b38898fc4b07c2f994ffa08";
@@ -20,8 +22,10 @@ class ListView extends Component {
 		this.state={
 			viewScreen:[],//search input
 			searchValue:"",
-			filterFlag:"all",
+			filterFlag:"false",
 			resultScreen:[],
+			moviedatas:[],
+			detailindex:0,
 		}
 	}
 	componentDidMount(){
@@ -29,7 +33,7 @@ class ListView extends Component {
 		viewScreen = this.renderSearch();
 		this.setState({viewScreen});
 	}
-	/*show search*/
+	/* show search */
 	renderSearch(){
 		return(
 			<div>
@@ -38,8 +42,8 @@ class ListView extends Component {
 				<Dropdown
 					selectOnBlur={false}
 					selection
-					placeholder={'Filter (default all) '}
-					options={[{key: 0, text: 'all', value: 'all'}, {key: 1, text: 'movie name', value: 'moviename'}]} 
+					placeholder={'Filter (default not include adult) '}
+					options={[{key: 0, text: 'not include adult', value: 'false'}, {key: 1, text: 'include adult', value: 'true'}]} 
 					onChange={(event,value) => this.updateFilter(event,value)}
 				/>
 			</div>
@@ -63,16 +67,19 @@ class ListView extends Component {
 	handleSearchClick(event){
 		document.getElementById("search").value = "";  
 		var self = this;
-		var url = "https://api.themoviedb.org/3/search/movie?api_key=" + apiKey + "&language=en-US&query="+ this.state.searchValue +"&page=1&include_adult=false";
+		var url = "https://api.themoviedb.org/3/search/movie?api_key=" + apiKey + "&language=en-US&query="+ this.state.searchValue +"&page=1&include_adult="+this.state.filterFlag;
+		console.log(url);
 		axios.get(url)//get movie 
 			.then(function (response) {
 				console.log(response);
 				if(response.status == 200){
 					console.log("search successfull");
-					console.log(response.data.results);
+					console.log(response.data.results);					
 					var resultScreen = [];
 					resultScreen = self.renderResultTable(response.data.results);
+					self.setState({moviedatas:response.data.results});
     				self.setState({resultScreen});
+					self.setState({searchValue:''});
 					//self.renderResultTable();
 					//console.log(response.data.user);
 					//var uploadScreen=[];
@@ -92,59 +99,255 @@ class ListView extends Component {
 	
 	
 	/* show search result */
-	 fetchDetails(e){
-    const data = e.target.getAttribute('data-item');
-    console.log('We need to get the details for ', data);
-  }
+	fetchDetails(e){
+		const data = e.target.getAttribute('data-item');
+		console.log('We need to get the details for ', data);
+	}
 	isEmpty(obj) {
 		return Object.keys(obj).length === 0;
 	}
 	/*show table > tr*/
-  renderResultRows(noteItems) {
-    var self = this;
-    return noteItems.map((data,index) =>{
-        return (
-            <tr key={index} data-item={data} onClick={(event) =>this.fetchDetails(event)}>
-                <td data-title="id">{data.id}</td>
-                <td data-title="title">{data.title}</td>
-                <td data-title="release_date">{data.release_date}</td>
-				<td data-title="content">
-						<Button label="Edit" primary={true}  onClick={(event) => self.handleNoteEditClick(event,index)}/>
-				</td>
-            </tr>
-        );
-    });
-  }
-  /* show table */
-  renderResultTable(data) {
-    var self = this;
-    return(
-		<div>
-		  <div>
-			<div className="noteheader">
-			 <center><h3>Note list</h3></center>
-			<Button  label="NewNote" onClick={(event) => this.handleNoteCreateClick(event)}/>
+	renderResultRowsA(noteItems) {
+		var self = this;
+		return noteItems.map((data,index) =>{
+			return (
+				<tr key={index} data-item={data} onClick={(event) =>this.fetchDetails(event)}>
+					<td data-title="id">{data.id}</td>
+					<td data-title="title">{data.title}</td>
+					<td data-title="release_date">{data.release_date}</td>
+					<td data-title="content">
+							<Button label="Edit" primary={true}  onClick={(event) => self.handleNoteEditClick(event,index)}/>
+					</td>
+				</tr>
+			);
+    	});
+	}
+	renderResultRows(datas) {
+		var self = this;
+		return datas.map((data,index) =>{
+			return (
+				<Table.Row key={index} data-item={data} onClick={(event) =>this.fetchDetails(event)}>
+					<Table.Cell data-title="id">{data.id}</Table.Cell>
+					<Table.Cell data-title="title">{data.title}</Table.Cell>
+					<Table.Cell data-title="release_date">{data.vote_average}</Table.Cell>
+					<Table.Cell data-title="content">
+							<Button label="Edit" onClick={(event) => self.handleDetailClick(event,data.id)}/>
+					</Table.Cell>
+				</Table.Row>
+			);
+    	});
+	}
+	/* show table */
+	renderResultTableA(data) {
+		var self = this;
+		return(
+			<div>
+				<div>
+					<div className="noteheader">
+					 <center><h3>Note list</h3></center>
+					<Button  label="NewNote" onClick={(event) => this.handleNoteCreateClick(event)}/>
+					</div>
+					<div className="notecontainer">
+							 <table className="notetable">
+							  <tr>
+								<th>ID</th>
+								<th>TITLE</th>
+								<th>RELEASE_DATE</th>
+								<th></th>
+							  </tr>
+							  <tbody>
+
+								{!this.isEmpty(data)
+								? this.renderResultRows(data)
+								: ''}
+							   </tbody>
+							</table>
+					 </div>
+				</div>
 			</div>
-			<div className="notecontainer">
-					 <table className="notetable">
-					  <tr>
-						<th>ID</th>
-						<th>TITLE</th>
-						<th>CONTENT</th>
-						<th></th>
-					  </tr>
-					  <tbody>
-					  
-						{!this.isEmpty(data)
-                        ? this.renderResultRows(data)
-                        : ''}
-					   </tbody>
-					</table>
-			 </div>
-		   </div>
-		  </div>
-	);
-  }
+		);
+	}
+	handleSortClick(event,flag){
+		var self = this;
+		console.log(flag);
+		var employees=[]
+		employees[0]={name:"George", age:32, retiredate:"March 12, 2014"}
+		employees[1]={name:"Edward", age:17, retiredate:"June 2, 2023"}
+		employees[2]={name:"Christine", age:58, retiredate:"December 20, 2036"}
+		employees[3]={name:"Sarah", age:62, retiredate:"April 30, 2020"}
+		if(flag == "ida"){
+			var results = this.state.moviedatas;
+			results.sort(function(a, b){
+				return a.id-b.id
+			})
+			console.log("idasort");
+			console.log(results);
+			console.log("idasort");
+			var resultScreen = [];
+			resultScreen = self.renderResultTable(results);
+			self.setState({moviedatas:results});
+			self.setState({resultScreen});
+			
+		}else if(flag == "idde"){
+			var results = this.state.moviedatas;
+			results.sort(function(a, b){
+				return b.id-a.id
+			})
+			console.log("idasort");
+			console.log(results);
+			console.log("idasort");
+			var resultScreen = [];
+			resultScreen = self.renderResultTable(results);
+			self.setState({moviedatas:results});
+			self.setState({resultScreen});
+		}else if(flag == "voa"){
+			var results = this.state.moviedatas;
+			results.sort(function(a, b){
+				return a.vote_average-b.vote_average
+			})
+			console.log("idasort");
+			console.log(results);
+			console.log("idasort");
+			var resultScreen = [];
+			resultScreen = self.renderResultTable(results);
+			self.setState({moviedatas:results});
+			self.setState({resultScreen});
+		}
+		else{
+			var results = this.state.moviedatas;
+			results.sort(function(a, b){
+				return b.vote_average-a.vote_average
+			})
+			console.log("idasort");
+			console.log(results);
+			console.log("idasort");
+			var resultScreen = [];
+			resultScreen = self.renderResultTable(results);
+			self.setState({moviedatas:results});
+			self.setState({resultScreen});
+		}
+	}
+	renderResultTable(data) {
+		var self = this;
+		return(
+			<div>
+				<div>
+					<div className="noteheader">
+					<center><h3>Note list</h3></center>
+						<Button.Group>
+							<Button onClick={(event) => this.handleSortClick(event,"ida")}>Sort by ID ASC</Button>
+							<Button.Or text='or' />
+							<Button onClick={(event) => this.handleSortClick(event,"idde")}>Sort by ID DESC</Button>
+							<Button.Or text='or' />
+							<Button onClick={(event) => this.handleSortClick(event,"voa")}>Sort by Vote_average ASC</Button>
+							<Button.Or text='or' />
+							<Button onClick={(event) => this.handleSortClick(event,"vode")}>Sort by Vote_average DESC</Button>
+						</Button.Group>
+					</div>
+					<div className="notecontainer">
+							 <Table definition>
+							  <Table.Header>
+								  <Table.Row>
+									<Table.HeaderCell>ID</Table.HeaderCell>
+									<Table.HeaderCell>TITLE</Table.HeaderCell>
+									<Table.HeaderCell>VOTE_AVG</Table.HeaderCell>
+									<Table.HeaderCell></Table.HeaderCell>
+									</Table.Row>
+							  </Table.Header>
+							  <Table.Body>
+
+								{!this.isEmpty(data)
+								? this.renderResultRows(data)
+								: ''}
+							   </Table.Body>
+							</Table>
+					 </div>
+				</div>
+			</div>
+		);
+	}
+	/*show detail*/
+	handleDetailClick(event,id){
+		//console.log(i);
+		var self = this;
+		var results = this.state.moviedatas;
+		var detailindex = 0;
+		for(var i=0;i<results.length;i++){
+			if(results[i].id == id){
+				detailindex = i;
+			}
+		}
+		console.log(detailindex);;
+		var resultScreen = [];
+		resultScreen = self.renderDetail(detailindex);
+		self.setState({resultScreen});
+		
+	}
+	renderDetail(detailindex){
+		console.log("renderDetail");
+		console.log(detailindex);
+		this.setState({ detailindex:detailindex });
+		var results = this.state.moviedatas;
+		var index = detailindex;
+		return(
+			<div>
+				<h3>Movie Detail </h3>
+				<div>
+					<Button.Group>
+						<Button onClick={(event) => this.handlePreClick(event,index)} >Pre</Button>
+						<Button onClick={(event) => this.handleNextClick(event,index)} >Next</Button>
+						<Button onClick={(event) => this.handleShowResult(event)} >Return</Button>
+					</Button.Group>
+				</div>
+				<List>
+					<List.Item icon='tag' content={'ID: ' + results[index].id} />
+					<List.Item icon='tag' content={'Title: ' + results[index].title} />
+					<List.Item icon='tag' content={'Original Title: ' + results[index].original_title} />
+					<List.Item icon='tag' content={'adult: ' + results[index].adult} />
+					<List.Item icon='tag' content={'original_language: ' + results[index].original_language} />
+					<List.Item icon='tag' content={'release_Date: ' + results[index].release_date} />
+					<List.Item icon='tag' content={'vote_average: ' + results[index].vote_average} />
+				  </List>
+			</div>	
+		);
+	}
+	handlePreClick(event,index){
+		console.log("pre");
+		console.log(index);
+		index = index - 1;
+		var results = this.state.moviedatas;
+		if(index >=results.length){
+			index = results.length -1;
+		}
+		if(index <0){
+			index = 0;
+		}
+		var resultScreen = [];
+		resultScreen = this.renderDetail(index);
+		this.setState({resultScreen});
+	}
+	handleNextClick(event,index){
+		console.log("pre");
+		console.log(index);
+		index = index + 1;
+		var results = this.state.moviedatas;
+		if(index >=results.length){
+			index = results.length -1;
+		}
+		if(index <0){
+			index = 0;
+		}
+		var resultScreen = [];
+		resultScreen = this.renderDetail(index);
+		this.setState({resultScreen});
+	}
+	handleShowResult(event){
+		var resultScreen = [];
+		var results = this.state.moviedatas;
+		resultScreen = this.renderResultTable(results);
+		this.setState({resultScreen});
+		this.setState({searchValue:''});
+	}
 	render() {
 		//console.log(this.props.user.noteItems);
 		//this.generateRows();

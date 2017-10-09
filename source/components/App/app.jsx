@@ -1,6 +1,7 @@
 import React, { Component }  from 'react';
 import Header from './header.jsx';
 import ListView from './listView.jsx';
+import GalleryView from './galleryView.jsx';
 import Home from './home.jsx';
 import {BrowserRouter as Router,Route, Link} from 'react-router-dom';
 
@@ -16,7 +17,7 @@ class App extends Component {
   }
   componentWillMount(){
     var currentScreen =[];
-    currentScreen.push(<Home appContext={this}/>);
+    currentScreen.push(<ListView appContext={this}/>);
     this.setState({
 		currentScreen:currentScreen
 	})
@@ -24,19 +25,22 @@ class App extends Component {
   /*nav bar click*/
   handleNavClick(event,page){
     switch(page){
-      case "list":
-      // console.log("need to open uploadapge")
-	  console.log("notelist");
-      var currentScreen=[];
-      currentScreen.push(<ListView appContext={this.props.appContext}/>);
-      this.setState({currentScreen})
-      break;
+		case "list":
+			// console.log("need to open uploadapge")
+	  		console.log("listview");
+			var currentScreen=[];
+			currentScreen.push(<ListView appContext={this.props.appContext}/>);
+			this.setState({currentScreen})
+		break;
       case "gallery":
-			console.log("gallery")
-      // console.log("need to open pastfiles")
-      //var currentScreen=[];
-      //currentScreen.push(<ProfileScreen appContext={this.props.appContext} role={this.props.role} user={this.props.user}/>);
-      //this.setState({currentScreen})
+			console.log("gallery");
+			var currentScreen=[];
+			currentScreen.push(<GalleryView appContext={this.props.appContext}/>);
+			this.setState({currentScreen})
+			// console.log("need to open pastfiles")
+			//var currentScreen=[];
+			//currentScreen.push(<ProfileScreen appContext={this.props.appContext} role={this.props.role} user={this.props.user}/>);
+			//this.setState({currentScreen})
 			
       break;
     }
