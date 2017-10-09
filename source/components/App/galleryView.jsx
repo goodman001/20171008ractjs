@@ -28,6 +28,7 @@ class GalleryView extends Component {
 			filterYear:"all",
 			resultScreen:[],
 			moviedatas:[],
+			filterdatas:[],
 			detailindex:0,
 		}
 	}
@@ -54,7 +55,7 @@ class GalleryView extends Component {
 					selectOnBlur={false}
 					selection
 					placeholder={'Filter Year (default all years) '}
-					options={[{key: 0, text: 'all years', value: 'all'}, {key: 1, text: '2017', value: '2017'}, {key: 2, text: '2016', value: '2016'}, {key: 3, text: '2015', value: '2015'}, {key: 4, text: '2014', value: '2014'}, {key: 5, text: 'Before 2013', value: 'before'}]} 
+					options={[{key: 0, text: 'all years', value: 'all'}, {key: 1, text: '2017', value: '2017'}, {key: 2, text: '2016', value: '2016'}, {key: 3, text: '2015', value: '2015'}, {key: 4, text: 'Before 2014', value: 'before'}]} 
 					onChange={(event,value) => this.updateYear(event,value)}
 				/>
 				<Button color='red' onClick={(event) => this.handleFilterSearch(event)}>Filter</Button>
@@ -98,6 +99,7 @@ class GalleryView extends Component {
 					var resultScreen = [];
 					resultScreen = self.renderResultList(response.data.results);
 					self.setState({moviedatas:response.data.results});
+					self.setState({filterdatas:response.data.results});
     				self.setState({resultScreen});
 					//self.renderResultTable();
 					//console.log(response.data.user);
@@ -127,6 +129,7 @@ class GalleryView extends Component {
 		console.log(voteavgrange);
 		console.log(yearrange);
 		var moviedatasvote = [];
+		/*check vote avg*/
 		switch(voteavgrange){
 				case "levelone":
 					for(var i =0;i < moviedatas.length;i++){
@@ -156,9 +159,73 @@ class GalleryView extends Component {
 					break;
 			default:
 				console.log("lalal");
+				moviedatasvote = moviedatas;
 				break;
 		}
-		console.log(moviedatasvote);
+		
+		/*check year range*/
+		var moviedatasyear = [];
+		switch(yearrange){
+				case "2017":
+					for(var i =0;i < moviedatasvote.length;i++){
+						var s = moviedatasvote[i].release_date;   
+						var y = new Date(Date.parse(s.replace(/-/g,"/"))).getFullYear();
+						console.log(y);
+						if(y  == 2017 )
+						{
+							moviedatasyear.push(moviedatasvote[i]);
+						}
+			
+					}
+					break;
+				case "2016":
+					for(var i =0;i < moviedatasvote.length;i++){
+						var s = moviedatasvote[i].release_date;   
+						var y = new Date(Date.parse(s.replace(/-/g,"/"))).getFullYear();
+						console.log(y);
+						if(y  == 2016 )
+						{
+							moviedatasyear.push(moviedatasvote[i]);
+						}
+			
+					}
+					
+					break;
+				case "2015":
+					for(var i =0;i < moviedatasvote.length;i++){
+						var s = moviedatasvote[i].release_date;   
+						var y = new Date(Date.parse(s.replace(/-/g,"/"))).getFullYear();
+						console.log(y);
+						if(y  == 2015 )
+						{
+							moviedatasyear.push(moviedatasvote[i]);
+						}
+			
+					}
+					break;
+				case "before":
+					for(var i =0;i < moviedatasvote.length;i++){
+						var s = moviedatasvote[i].release_date;   
+						var y = new Date(Date.parse(s.replace(/-/g,"/"))).getFullYear();
+						console.log(y);
+						if(y  <= 2014 )
+						{
+							moviedatasyear.push(moviedatasvote[i]);
+						}
+			
+					}
+					break;
+			default:
+				moviedatasyear = moviedatasvote;
+				console.log("lalal");
+				break;
+		}
+		console.log(moviedatasyear);
+		var resultScreen = [];
+		this.setState({filterdatas:moviedatasyear});
+		resultScreen = this.renderResultList(moviedatasyear);
+		this.setState({resultScreen});
+		
 	}
 	
 	/* show search result */
@@ -220,7 +287,10 @@ class GalleryView extends Component {
 			</div>
 		);
 	}
-	
+	handleDetailClick(event,id){
+		console.log(id);
+		
+	}
 	render() {
 		//console.log(this.props.user.noteItems);
 		//this.generateRows();
