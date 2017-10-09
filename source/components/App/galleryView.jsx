@@ -24,7 +24,8 @@ class GalleryView extends Component {
 
 		this.state={
 			viewScreen:[],//search input
-			filterFlag:"false",
+			filterVoteAvg:"all",
+			filterYear:"all",
 			resultScreen:[],
 			moviedatas:[],
 			detailindex:0,
@@ -32,30 +33,31 @@ class GalleryView extends Component {
 	}
 	componentDidMount(){
 		//var viewScreen=[];
+		var viewScreen=[];
+		viewScreen = this.renderSearch();
+		this.setState({viewScreen});
 		this.handleInitGetGallery();
 		//this.setState({viewScreen});
 	}
 	/* show search */
 	renderSearch(){
 		return(
-			<div>
-				<Input loading placeholder='Search...' id="search" onChange = {(event) => this.updateSearchValue(event)} />
-				
+			<div>		
 				<Dropdown
 					selectOnBlur={false}
 					selection
-					placeholder={'Filter (default not include adult) '}
-					options={[{key: 0, text: 'not include adult', value: 'false'}, {key: 1, text: 'include adult', value: 'true'}]} 
-					onChange={(event,value) => this.updateFilter(event,value)}
+					placeholder={'select vote average rank(default all) '}
+					options={[{key: 0, text: 'ALL', value: 'all'}, {key: 1, text: '8-10', value: 'levelone'}, {key: 2, text: '7-8', value: 'leveltwo'}, {key: 3, text: '0-7', value: 'levelthree'}]} 
+					onChange={(event,value) => this.updateVoteAvg(event,value)}
 				/>
 				<Dropdown
 					selectOnBlur={false}
 					selection
-					placeholder={'Filter (default not include adult) '}
-					options={[{key: 0, text: 'not include adult', value: 'false'}, {key: 1, text: 'include adult', value: 'true'}]} 
-					onChange={(event,value) => this.updateFilter(event,value)}
+					placeholder={'Filter Year (default all years) '}
+					options={[{key: 0, text: 'all years', value: 'all'}, {key: 1, text: '2017', value: '2017'}, {key: 2, text: '2016', value: '2016'}, {key: 3, text: '2015', value: '2015'}, {key: 4, text: '2014', value: '2014'}, {key: 5, text: 'Before 2013', value: 'before'}]} 
+					onChange={(event,value) => this.updateYear(event,value)}
 				/>
-				<Button color='red' onClick={(event) => this.handleSearchClick(event)}>Search</Button>
+				<Button color='red' onClick={(event) => this.handleFilterSearch(event)}>Filter</Button>
 			</div>
 		);
 	}
@@ -66,10 +68,18 @@ class GalleryView extends Component {
 		});
 	}
 	/*filter*/
-	updateFilter(event,value){
+	updateVoteAvg(event,value){
 		console.log(value.value);
-		this.setState({ filterFlag:value.value });
-		console.log(this.state.filterFlag);
+		this.setState({ filterVoteAvg:value.value });
+		//console.log(this.state.filterVoteAvg);
+		
+		
+	}
+	/*filter*/
+	updateYear(event,value){
+		console.log(value.value);
+		this.setState({ filterYear:value.value });
+		//console.log(this.state.filterVoteAvg);
 		
 		
 	}
@@ -86,7 +96,7 @@ class GalleryView extends Component {
 					console.log("search successfull");
 					console.log(response.data.results);					
 					var resultScreen = [];
-					resultScreen = self.renderResultTable(response.data.results);
+					resultScreen = self.renderResultList(response.data.results);
 					self.setState({moviedatas:response.data.results});
     				self.setState({resultScreen});
 					//self.renderResultTable();
@@ -105,7 +115,51 @@ class GalleryView extends Component {
 			   console.log(error);
 			});
 	}
-	
+	/*filter search*/
+	handleFilterSearch(event){
+		//document.getElementById("search").value = "";  
+		console.log("fileter search");
+		var moviedatas = [];
+		var endarr = [];
+		moviedatas = this.state.moviedatas;
+		var voteavgrange = this.state.filterVoteAvg;
+		var yearrange = this.state.filterYear;
+		console.log(voteavgrange);
+		console.log(yearrange);
+		var moviedatasvote = [];
+		switch(voteavgrange){
+				case "levelone":
+					for(var i =0;i < moviedatas.length;i++){
+						if(moviedatas[i].vote_average >=8)
+						{
+							moviedatasvote.push(moviedatas[i]);
+						}
+			
+					}
+					break;
+				case "leveltwo":
+				
+					for(var i =0;i < moviedatas.length;i++){
+						if(moviedatas[i].vote_average >=7 && moviedatas[i].vote_average <=8)
+						{
+							moviedatasvote.push(moviedatas[i]);
+						}
+					}
+					break;
+				case "levelthree":
+					for(var i =0;i < moviedatas.length;i++){
+						if(moviedatas[i].vote_average >=0 && moviedatas[i].vote_average <=7)
+						{
+							moviedatasvote.push(moviedatas[i]);
+						}
+					}
+					break;
+			default:
+				console.log("lalal");
+				break;
+		}
+		console.log(moviedatasvote);
+	}
 	
 	/* show search result */
 	fetchDetails(e){
@@ -116,13 +170,13 @@ class GalleryView extends Component {
 		return Object.keys(obj).length === 0;
 	}
 	/*show table > tr*/
-	renderResultRows(datas) {
+	renderResultItems(datas) {
 		var self = this;
 		return datas.map((data,index) =>{
 			return (
 				<List.Item key={index} data-item={data} onClick={(event) =>this.fetchDetails(event)}>
 					<List.Content data-title="id">
-						<Image data-title="id"  src={data.id} />
+						<Image data-title="id"  src={"https://image.tmdb.org/t/p/w300/"+data.poster_path} />
 					</List.Content>
 					<List.Content data-title="title">
 						<List.Header as='a'>{data.title}</List.Header>
@@ -135,7 +189,7 @@ class GalleryView extends Component {
     	});
 	}
 	/* show table */
-	renderResultTable(data) {
+	renderResultList(data) {
 		var self = this;
 		return(
 			<div>
@@ -154,9 +208,11 @@ class GalleryView extends Component {
 					</div>
 					<div className="notecontainer">
 							<List horizontal relaxed>
-
+								<List.Item >
+									<List.Content></List.Content><List.Content ></List.Content><List.Content ></List.Content>
+								</List.Item>
 								{!this.isEmpty(data)
-								? this.renderResultRows(data)
+								? this.renderResultItems(data)
 								: ''}
 							</List>
 					 </div>
@@ -182,6 +238,7 @@ class GalleryView extends Component {
 
 			  <div className="container">
 					Gallery
+				  {this.state.viewScreen}
 				  {this.state.resultScreen}
 			  </div>
 		  </div>
