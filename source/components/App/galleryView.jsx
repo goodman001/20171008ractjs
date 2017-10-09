@@ -5,7 +5,7 @@ import {BrowserRouter as Router,Route, Link} from 'react-router-dom';
 import 'semantic-ui-css/semantic.min.css';
 import { Button, Icon } from 'semantic-ui-react';
 import { Input } from 'semantic-ui-react';
-
+import { Header} from 'semantic-ui-react';
 
 import { Form, Radio } from 'semantic-ui-react';
 import { Grid, Segment, Divider } from 'semantic-ui-react';
@@ -43,7 +43,17 @@ class GalleryView extends Component {
 	/* show search */
 	renderSearch(){
 		return(
-			<div>		
+			<div>	
+				<Header as='h2' icon textAlign='center'>
+					<Header.Content>
+					Gallery View
+					</Header.Content>
+				</Header>
+				<Header as='h3' icon textAlign='left'>
+					<Header.Content>
+					Filter
+					</Header.Content>
+				</Header>
 				<Dropdown
 					selectOnBlur={false}
 					selection
@@ -261,8 +271,12 @@ class GalleryView extends Component {
 		return(
 			<div>
 				<div>
-					<div className="noteheader">
-					<center><h3>Note list</h3></center>
+					<Header as='h3' icon textAlign='left'>
+						<Header.Content>
+						Sort
+						</Header.Content>
+					</Header>
+					<div className="sortzone">
 						<Button.Group>
 							<Button onClick={(event) => this.handleSortClick(event,"ida")}>Sort by ID ASC</Button>
 							<Button.Or text='or' />
@@ -287,9 +301,143 @@ class GalleryView extends Component {
 			</div>
 		);
 	}
+	handleSortClick(event,flag){
+		var self = this;
+		console.log(flag);
+		if(flag == "ida"){
+			var results = this.state.filterdatas;
+			results.sort(function(a, b){
+				return a.id-b.id
+			})
+			console.log("idasort");
+			console.log(results);
+			console.log("idasort");
+			var resultScreen = [];
+			resultScreen = self.renderResultList(results);
+			self.setState({filterdatas:results});
+			self.setState({resultScreen});
+			
+		}else if(flag == "idde"){
+			var results = this.state.filterdatas;
+			results.sort(function(a, b){
+				return b.id-a.id
+			})
+			console.log("idasort");
+			console.log(results);
+			console.log("idasort");
+			var resultScreen = [];
+			resultScreen = self.renderResultList(results);
+			self.setState({filterdatas:results});
+			self.setState({resultScreen});
+		}else if(flag == "voa"){
+			var results = this.state.filterdatas;
+			results.sort(function(a, b){
+				return a.vote_average-b.vote_average
+			})
+			console.log("idasort");
+			console.log(results);
+			console.log("idasort");
+			var resultScreen = [];
+			resultScreen = self.renderResultList(results);
+			self.setState({filterdatas:results});
+			self.setState({resultScreen});
+		}
+		else{
+			var results = this.state.filterdatas;
+			results.sort(function(a, b){
+				return b.vote_average-a.vote_average
+			})
+			console.log("idasort");
+			console.log(results);
+			console.log("idasort");
+			var resultScreen = [];
+			resultScreen = self.renderResultList(results);
+			self.setState({filterdatas:results});
+			self.setState({resultScreen});
+		}
+	}
 	handleDetailClick(event,id){
-		console.log(id);
+		//console.log(i);
+		var self = this;
+		var results = this.state.filterdatas;
+		var detailindex = 0;
+		for(var i=0;i<results.length;i++){
+			if(results[i].id == id){
+				detailindex = i;
+			}
+		}
+		console.log(detailindex);;
+		var resultScreen = [];
+		resultScreen = self.renderDetail(detailindex);
+		self.setState({resultScreen});
 		
+	}
+	renderDetail(detailindex){
+		console.log("renderDetail");
+		console.log(detailindex);
+		this.setState({ detailindex:detailindex });
+		var results = this.state.filterdatas;
+		var index = detailindex;
+		return(
+			<div>
+				<h3>Movie Detail </h3>
+				<div>
+					<Button.Group>
+						<Button onClick={(event) => this.handlePreClick(event,index)} >Pre</Button>
+						<Button onClick={(event) => this.handleNextClick(event,index)} >Next</Button>
+						<Button onClick={(event) => this.handleShowResult(event)} >Return</Button>
+					</Button.Group>
+				</div>
+				<List>
+					<List.Item icon='tag' content={'ID: ' + results[index].id} />
+					<List.Item icon='tag' content={'Title: ' + results[index].title} />
+					<List.Item icon='tag' content={'Original Title: ' + results[index].original_title} />
+					<List.Item icon='tag' content={'adult: ' + results[index].adult} />
+					<List.Item icon='tag' content={'original_language: ' + results[index].original_language} />
+					<List.Item icon='tag' content={'release_Date: ' + results[index].release_date} />
+					<List.Item icon='tag' content={'vote_average: ' + results[index].vote_average} />
+					<List.Content>
+						<Image src={"https://image.tmdb.org/t/p/w300/"+results[index].poster_path} />
+					</List.Content>
+				  </List>
+			</div>	
+		);
+	}
+	handlePreClick(event,index){
+		console.log("pre");
+		console.log(index);
+		index = index - 1;
+		var results = this.state.filterdatas;
+		if(index >=results.length){
+			index = results.length -1;
+		}
+		if(index <0){
+			index = 0;
+		}
+		var resultScreen = [];
+		resultScreen = this.renderDetail(index);
+		this.setState({resultScreen});
+	}
+	handleNextClick(event,index){
+		console.log("pre");
+		console.log(index);
+		index = index + 1;
+		var results = this.state.filterdatas;
+		if(index >=results.length){
+			index = results.length -1;
+		}
+		if(index <0){
+			index = 0;
+		}
+		var resultScreen = [];
+		resultScreen = this.renderDetail(index);
+		this.setState({resultScreen});
+	}
+	handleShowResult(event){
+		var resultScreen = [];
+		var results = this.state.filterdatas;
+		resultScreen = this.renderResultList(results);
+		this.setState({resultScreen});
 	}
 	render() {
 		//console.log(this.props.user.noteItems);
@@ -306,11 +454,14 @@ class GalleryView extends Component {
 		return (
 		  <div className="App">
 
-			  <div className="container">
-					Gallery
-				  {this.state.viewScreen}
-				  {this.state.resultScreen}
-			  </div>
+			<div className="container">
+				<div className = "header">
+				{this.state.viewScreen}
+				</div>
+				<div className = "result">
+				{this.state.resultScreen}
+				</div>
+			</div>
 		  </div>
 		);
 	}

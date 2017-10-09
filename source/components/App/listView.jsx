@@ -8,8 +8,9 @@ import { Input } from 'semantic-ui-react';
 import { Form, Radio } from 'semantic-ui-react';
 import { Grid, Segment, Divider } from 'semantic-ui-react';
 import { Table } from 'semantic-ui-react';
-import { Dropdown } from 'semantic-ui-react'
-import { List } from 'semantic-ui-react'
+import { Dropdown } from 'semantic-ui-react';
+import { List } from 'semantic-ui-react';
+import { Header} from 'semantic-ui-react';
 import axios from 'axios';
 
 var apiKey = "268cadf74b38898fc4b07c2f994ffa08";
@@ -37,8 +38,17 @@ class ListView extends Component {
 	renderSearch(){
 		return(
 			<div>
-				<Input loading placeholder='Search...' id="search" onChange = {(event) => this.updateSearchValue(event)} />
-				<Button color='red' onClick={(event) => this.handleSearchClick(event)}>Search</Button>
+				<Header as='h2' icon textAlign='center'>
+					<Header.Content>
+					List View
+					</Header.Content>
+				</Header>
+				<Header as='h3' icon textAlign='left'>
+					<Header.Content>
+					Search & Filter
+					</Header.Content>
+				</Header>
+				<Input loading placeholder='Search...' id="search" onChange = {(event) => this.updateSearchValue(event)} />			
 				<Dropdown
 					selectOnBlur={false}
 					selection
@@ -46,6 +56,7 @@ class ListView extends Component {
 					options={[{key: 0, text: 'not include adult', value: 'false'}, {key: 1, text: 'include adult', value: 'true'}]} 
 					onChange={(event,value) => this.updateFilter(event,value)}
 				/>
+				<Button color='red' onClick={(event) => this.handleSearchClick(event)}>Search</Button>
 			</div>
 		);
 	}
@@ -80,12 +91,6 @@ class ListView extends Component {
 					self.setState({moviedatas:response.data.results});
     				self.setState({resultScreen});
 					self.setState({searchValue:''});
-					//self.renderResultTable();
-					//console.log(response.data.user);
-					//var uploadScreen=[];
-					//uploadScreen.push(<UserPage appContext={self.props.appContext} role={self.state.loginRole} user={response.data.user} />)
-
-					//self.renderNotelist(response.data.user.noteItems);
 				}
 				else{
 				 console.log("searchurl fail");
@@ -106,22 +111,7 @@ class ListView extends Component {
 	isEmpty(obj) {
 		return Object.keys(obj).length === 0;
 	}
-	/*show table > tr*/
-	renderResultRowsA(noteItems) {
-		var self = this;
-		return noteItems.map((data,index) =>{
-			return (
-				<tr key={index} data-item={data} onClick={(event) =>this.fetchDetails(event)}>
-					<td data-title="id">{data.id}</td>
-					<td data-title="title">{data.title}</td>
-					<td data-title="release_date">{data.release_date}</td>
-					<td data-title="content">
-							<Button label="Edit" primary={true}  onClick={(event) => self.handleNoteEditClick(event,index)}/>
-					</td>
-				</tr>
-			);
-    	});
-	}
+	/*show table */
 	renderResultRows(datas) {
 		var self = this;
 		return datas.map((data,index) =>{
@@ -131,50 +121,16 @@ class ListView extends Component {
 					<Table.Cell data-title="title">{data.title}</Table.Cell>
 					<Table.Cell data-title="release_date">{data.vote_average}</Table.Cell>
 					<Table.Cell data-title="content">
-							<Button label="Edit" onClick={(event) => self.handleDetailClick(event,data.id)}/>
+							<Button label="View Detail"  color='red' onClick={(event) => self.handleDetailClick(event,data.id)}/>
 					</Table.Cell>
 				</Table.Row>
 			);
     	});
 	}
 	/* show table */
-	renderResultTableA(data) {
-		var self = this;
-		return(
-			<div>
-				<div>
-					<div className="noteheader">
-					 <center><h3>Note list</h3></center>
-					<Button  label="NewNote" onClick={(event) => this.handleNoteCreateClick(event)}/>
-					</div>
-					<div className="notecontainer">
-							 <table className="notetable">
-							  <tr>
-								<th>ID</th>
-								<th>TITLE</th>
-								<th>RELEASE_DATE</th>
-								<th></th>
-							  </tr>
-							  <tbody>
-
-								{!this.isEmpty(data)
-								? this.renderResultRows(data)
-								: ''}
-							   </tbody>
-							</table>
-					 </div>
-				</div>
-			</div>
-		);
-	}
 	handleSortClick(event,flag){
 		var self = this;
 		console.log(flag);
-		var employees=[]
-		employees[0]={name:"George", age:32, retiredate:"March 12, 2014"}
-		employees[1]={name:"Edward", age:17, retiredate:"June 2, 2023"}
-		employees[2]={name:"Christine", age:58, retiredate:"December 20, 2036"}
-		employees[3]={name:"Sarah", age:62, retiredate:"April 30, 2020"}
 		if(flag == "ida"){
 			var results = this.state.moviedatas;
 			results.sort(function(a, b){
@@ -232,8 +188,12 @@ class ListView extends Component {
 		return(
 			<div>
 				<div>
-					<div className="noteheader">
-					<center><h3>Note list</h3></center>
+					<Header as='h3' icon textAlign='left'>
+						<Header.Content>
+						Result list
+						</Header.Content>
+					</Header>
+					<div className="sortzone">
 						<Button.Group>
 							<Button onClick={(event) => this.handleSortClick(event,"ida")}>Sort by ID ASC</Button>
 							<Button.Or text='or' />
@@ -244,23 +204,23 @@ class ListView extends Component {
 							<Button onClick={(event) => this.handleSortClick(event,"vode")}>Sort by Vote_average DESC</Button>
 						</Button.Group>
 					</div>
-					<div className="notecontainer">
-							 <Table definition>
-							  <Table.Header>
-								  <Table.Row>
-									<Table.HeaderCell>ID</Table.HeaderCell>
-									<Table.HeaderCell>TITLE</Table.HeaderCell>
-									<Table.HeaderCell>VOTE_AVG</Table.HeaderCell>
-									<Table.HeaderCell></Table.HeaderCell>
-									</Table.Row>
-							  </Table.Header>
-							  <Table.Body>
+					<div>
+						<Table celled>
+							<Table.Header>
+							  <Table.Row>
+								<Table.HeaderCell>ID</Table.HeaderCell>
+								<Table.HeaderCell>TITLE</Table.HeaderCell>
+								<Table.HeaderCell>VOTE_AVG</Table.HeaderCell>
+								<Table.HeaderCell></Table.HeaderCell>
+								</Table.Row>
+							</Table.Header>
+							<Table.Body>
 
-								{!this.isEmpty(data)
-								? this.renderResultRows(data)
-								: ''}
-							   </Table.Body>
-							</Table>
+							{!this.isEmpty(data)
+							? this.renderResultRows(data)
+							: ''}
+							</Table.Body>
+						</Table>
 					 </div>
 				</div>
 			</div>
@@ -291,23 +251,29 @@ class ListView extends Component {
 		var index = detailindex;
 		return(
 			<div>
-				<h3>Movie Detail </h3>
-				<div>
+				<Header as='h3' icon textAlign='left'>
+					<Header.Content>
+					Movie Detail
+					</Header.Content>
+				</Header>
+				<div className="sortzone">
 					<Button.Group>
 						<Button onClick={(event) => this.handlePreClick(event,index)} >Pre</Button>
 						<Button onClick={(event) => this.handleNextClick(event,index)} >Next</Button>
 						<Button onClick={(event) => this.handleShowResult(event)} >Return</Button>
 					</Button.Group>
 				</div>
-				<List>
-					<List.Item icon='tag' content={'ID: ' + results[index].id} />
-					<List.Item icon='tag' content={'Title: ' + results[index].title} />
-					<List.Item icon='tag' content={'Original Title: ' + results[index].original_title} />
-					<List.Item icon='tag' content={'adult: ' + results[index].adult} />
-					<List.Item icon='tag' content={'original_language: ' + results[index].original_language} />
-					<List.Item icon='tag' content={'release_Date: ' + results[index].release_date} />
-					<List.Item icon='tag' content={'vote_average: ' + results[index].vote_average} />
-				  </List>
+				<div className="detailzone">
+					<List>
+						<List.Item icon='tag' content={'ID: ' + results[index].id} />
+						<List.Item icon='tag' content={'Title: ' + results[index].title} />
+						<List.Item icon='tag' content={'Original Title: ' + results[index].original_title} />
+						<List.Item icon='tag' content={'adult: ' + results[index].adult} />
+						<List.Item icon='tag' content={'original_language: ' + results[index].original_language} />
+						<List.Item icon='tag' content={'release_Date: ' + results[index].release_date} />
+						<List.Item icon='tag' content={'vote_average: ' + results[index].vote_average} />
+					</List>
+				</div>
 			</div>	
 		);
 	}
@@ -363,11 +329,14 @@ class ListView extends Component {
 		return (
 		  <div className="App">
 
-			  <div className="container">
-
-				  {this.state.viewScreen}
-				  {this.state.resultScreen}
-			  </div>
+			<div className="container">
+				<div className = "header">
+				{this.state.viewScreen}
+				</div>
+				<div className = "result">
+				{this.state.resultScreen}
+				</div>
+			</div>
 		  </div>
 		);
 	}

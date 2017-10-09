@@ -1,8 +1,7 @@
 import React, { Component }  from 'react';
-import Header from './header.jsx';
 import ListView from './listView.jsx';
 import GalleryView from './galleryView.jsx';
-import Home from './home.jsx';
+import styles from './app.scss'
 import {BrowserRouter as Router,Route, Link} from 'react-router-dom';
 
 import 'semantic-ui-css/semantic.min.css';
@@ -51,8 +50,8 @@ class App extends Component {
       <div className="App">
         <div>
 			<Button.Group attached='top'>
-				<Button onClick={(event) => this.handleNavClick(event,"list")}>A List View</Button>
-				<Button onClick={(event) => this.handleNavClick(event,"gallery")}>A gallery view</Button>
+				<Button color='google plus' onClick={(event) => this.handleNavClick(event,"list")}>A List View</Button>
+				<Button color='twitter' onClick={(event) => this.handleNavClick(event,"gallery")}>A gallery view</Button>
     		</Button.Group>
 		</div>
         <div>
@@ -63,8 +62,5 @@ class App extends Component {
   }
 }
 
-const style = {
-  margin: 15,
-};
 
 export default App;
