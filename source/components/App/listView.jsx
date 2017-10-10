@@ -52,8 +52,8 @@ class ListView extends Component {
 				<Dropdown
 					selectOnBlur={false}
 					selection
-					placeholder={'Filter (default not include adult) '}
-					options={[{key: 0, text: 'not include adult', value: 'false'}, {key: 1, text: 'include adult', value: 'true'}]} 
+					placeholder={'select vote average rank(default all) '}
+					options={[{key: 0, text: 'ALL', value: 'all'}, {key: 1, text: '8-10', value: 'levelone'}, {key: 2, text: '7-8', value: 'leveltwo'}, {key: 3, text: '0-7', value: 'levelthree'}]} 
 					onChange={(event,value) => this.updateFilter(event,value)}
 				/>
 				<Button color='red' onClick={(event) => this.handleSearchClick(event)}>Search</Button>
@@ -78,7 +78,7 @@ class ListView extends Component {
 	handleSearchClick(event){
 		document.getElementById("search").value = "";  
 		var self = this;
-		var url = "https://api.themoviedb.org/3/search/movie?api_key=" + apiKey + "&language=en-US&query="+ this.state.searchValue +"&page=1&include_adult="+this.state.filterFlag;
+		var url = "https://api.themoviedb.org/3/search/movie?api_key=" + apiKey + "&language=en-US&query="+ this.state.searchValue +"&page=1&include_adult=false";
 		console.log(url);
 		axios.get(url)//get movie 
 			.then(function (response) {
@@ -87,8 +87,50 @@ class ListView extends Component {
 					console.log("search successfull");
 					console.log(response.data.results);					
 					var resultScreen = [];
-					resultScreen = self.renderResultTable(response.data.results);
-					self.setState({moviedatas:response.data.results});
+					//this.state.filterFlag
+					//document.getElementById("search").value = "";  
+					console.log("fileter search");
+					var moviedatas = [];
+					moviedatas = response.data.results;
+					var voteavgrange = self.state.filterFlag;
+					console.log(voteavgrange);
+					var moviedatasvote = [];
+					/*check vote avg*/
+					switch(voteavgrange){
+							case "levelone":
+								for(var i =0;i < moviedatas.length;i++){
+									if(moviedatas[i].vote_average >=8)
+									{
+										moviedatasvote.push(moviedatas[i]);
+									}
+
+								}
+								break;
+							case "leveltwo":
+
+								for(var i =0;i < moviedatas.length;i++){
+									if(moviedatas[i].vote_average >=7 && moviedatas[i].vote_average <=8)
+									{
+										moviedatasvote.push(moviedatas[i]);
+									}
+								}
+								break;
+							case "levelthree":
+								for(var i =0;i < moviedatas.length;i++){
+									if(moviedatas[i].vote_average >=0 && moviedatas[i].vote_average <=7)
+									{
+										moviedatasvote.push(moviedatas[i]);
+									}
+								}
+								break;
+						default:
+							console.log("lalal");
+							moviedatasvote = moviedatas;
+							break;
+				
+					}
+					resultScreen = self.renderResultTable(moviedatasvote);
+					self.setState({moviedatas:moviedatasvote});
     				self.setState({resultScreen});
 					self.setState({searchValue:''});
 				}
